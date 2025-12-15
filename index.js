@@ -1,48 +1,43 @@
+// 1. Import express
+const express = require("express");
 
-//1,import express
+// 5. Import cors
+const cors = require("cors");
 
-const express=require("express")
+// 8. Import router
+const router = require("./router");
 
-//5 import cors
+// 7. Import dotenv
+require("dotenv").config();
 
-const cors=require("cors")
+// 11. Connect db
+require("./db/connection");
 
-//8 import router
+// Import path to handle file paths
+const path = require("path");
 
-const router=require("./router")
+// 2. Create express app
+const GamersConnect = express();
 
-//7 import dotenv
+// 6. Tell server to use cors
+GamersConnect.use(cors());
 
-require("dotenv").config()
+// 10. Parse incoming JSON requests
+GamersConnect.use(express.json());
 
-//11,connect db
+// Serve static files from the uploads folder
+GamersConnect.use(
+  "/imguploads",
+  express.static(path.join(__dirname, "imguploads"))
+);
 
-require("./db/connection")
+// 9. Tell server to use router
+GamersConnect.use(router);
 
-//2create express
+// 3. Create port
+const PORT = 3000;
 
-const GamersConnect=express()
-
-//6,tells server to use cors
-
-GamersConnect.use(cors())
-
-//10,parse request
-
-GamersConnect.use(express.json())
-
-//9,tell server to use router
-
-GamersConnect.use(router)
-
-//3 create port
-
-const PORT=3000
-
-//4,tell to server
-
-GamersConnect.listen(PORT,()=>{
-    console.log(`server running successfully at ${PORT}`);
-    
-})
-
+// 4. Start server
+GamersConnect.listen(PORT, () => {
+  console.log(`server running successfully at ${PORT}`);
+});

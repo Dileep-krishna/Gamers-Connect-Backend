@@ -15,9 +15,9 @@ router.post("/login", loginController);
 // Protect post creation with JWT and accept multiple files with field name 'uploadImages'
 router.post("/create-post", jwtMiddleware, multerConfig.array("uploadImages", 5), createPostController);
 
-router.get("/test", (req, res) => {
-  res.json({ message: "Router is working ✅" });
-});
+// router.get("/test", (req, res) => {
+//   res.json({ message: "Router is working ✅" });
+// });
 //get user post
 router.get("/home-post",jwtMiddleware,getUserPostsController)
 
