@@ -1,7 +1,9 @@
 const express = require("express");
 const {
   registerController,
-  loginController
+  loginController,
+  userProfileController,
+  getUserProfileController
 } = require("./controller/userController");
 const { createPostController, getUserPostsController, getAllPostsController } = require("./controller/PostController");
 const jwtMiddleware = require("./middlewares/jwtMiddleware");
@@ -24,7 +26,20 @@ router.get("/home-post",jwtMiddleware,getUserPostsController)
 // //get all user post
 // router.get("/home-post",getAllPostsController)
 
-// //
+// update userProfile
+router.get(
+  "/profile",
+  jwtMiddleware,
+  getUserProfileController
+);
+
+router.put(
+  "/profile-update",
+  jwtMiddleware,
+  multerConfig.single("profile"),
+  userProfileController
+);
+
 
 
 

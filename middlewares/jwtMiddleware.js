@@ -3,7 +3,6 @@ const jwt = require("jsonwebtoken");
 const jwtMiddleware = (req, res, next) => {
   console.log("Inside JWT middleware");
 
-  // 🔴 Check token existence
   if (!req.headers.authorization) {
     return res.status(401).json({
       success: false,
@@ -16,9 +15,8 @@ const jwtMiddleware = (req, res, next) => {
   try {
     const jwtResponse = jwt.verify(token, process.env.JWTSecretKey);
 
-    // ✅ Attach user info to request
-    req.userId = jwtResponse.id;       // user ObjectId
-    req.userMail = jwtResponse.userMail;
+    req.userId = jwtResponse.id;       // ✅ user _id
+    req.userMail = jwtResponse.userMail; // ✅ email
 
     next();
   } catch (error) {

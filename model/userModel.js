@@ -30,6 +30,11 @@ const userSchema=new mongoose.Schema({
         default:"user"
 
     },
+    orginalname:{
+        type:String,
+        default:"user"
+
+    },
     
     
 })
