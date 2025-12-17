@@ -19,7 +19,7 @@ const path = require("path");
 // 2. Create express app
 const GamersConnect = express();
 
-// 6. Tell server to use cors
+// 6. Tell srver to use cors
 GamersConnect.use(cors());
 
 // 10. Parse incoming JSON requests
@@ -36,6 +36,13 @@ GamersConnect.use(router);
 
 // 3. Create port
 const PORT = 3000;
+
+//error
+// app.use((err, req, res, next) => {
+//   console.error("Global error handler:", err);
+//   res.status(500).json({ success: false, message: "Server error" });
+// });
+
 
 // 4. Start server
 GamersConnect.listen(PORT, () => {

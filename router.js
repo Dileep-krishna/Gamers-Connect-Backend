@@ -5,11 +5,14 @@ const {
   userProfileController,
   getUserProfileController,
   adminUserController,
-  deleteUser
+  deleteUser,
+  adminProfileController
 } = require("./controller/userController");
 const { createPostController, getUserPostsController, getAllPostsController } = require("./controller/PostController");
 const jwtMiddleware = require("./middlewares/jwtMiddleware");
 const multerConfig = require("./middlewares/imgMulterMiddleware");
+const adminJwtMiddleware = require("./middlewares/adminJwtMiddleware");
+const multer = require("multer");
 
 const router = express.Router();
 
@@ -44,6 +47,28 @@ router.put(
 // ------admin-------
 
 router.get("/get-allUsers",adminUserController)
+
+//admin profile update
+
+// Multer setup for file uploads (profile image)
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, 'imguploads/'); // folder where files are saved
+//   },
+//   filename: (req, file, cb) => {
+//     cb(null, Date.now() + '-' + file.originalname);
+//   }
+// });
+// const upload = multer({ storage });
+
+// PUT route for admin profile update
+router.put(
+  '/admin/profile',
+  adminJwtMiddleware,    // JWT auth middleware for admin
+  multerConfig.single('profile'),  // 'profile' is the form field name for the image file
+  adminProfileController
+);;
+
 
 //admin delete user
 // router.delete("/delete-user/:id", deleteUser);

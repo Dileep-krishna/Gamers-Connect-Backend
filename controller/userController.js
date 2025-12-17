@@ -1,4 +1,5 @@
 const users = require("../model/userModel");
+const admins = require('../model/adminmodel');
 const jwt=require('jsonwebtoken')
 
 exports.registerController = async (req, res) => {
@@ -32,20 +33,28 @@ exports.registerController = async (req, res) => {
 //login controller
 exports.loginController = async (req, res) => {
   const { email, password } = req.body;
-  console.log('inside the login controller');
+  console.log("inside the login controller");
 
   try {
-    // Check if admin credentials (hardcoded)
+    // ================= ADMIN LOGIN (FIXED) =================
     if (email === "admin@gmail.com" && password === "admin") {
-      const adminUser = {
-        _id: "admin-id",          // dummy id for admin
-        name: "Admin",
-        email: "admin@gmail.com",
-        role: "admin",
-      };
+
+      // 🔹 Find admin from DB
+      const adminUser = await admins.findOne({ email });
+
+      if (!adminUser) {
+        return res.status(404).json({
+          success: false,
+          message: "Admin not found in database"
+        });
+      }
 
       const token = jwt.sign(
-        { id: adminUser._id, userMail: adminUser.email, role: adminUser.role },
+        {
+          id: adminUser._id,          // ✅ REAL ObjectId
+          userMail: adminUser.email,
+          role: "admin"
+        },
         process.env.JWTSecretKey,
         { expiresIn: "1h" }
       );
@@ -54,24 +63,26 @@ exports.loginController = async (req, res) => {
         success: true,
         message: "Admin login successful",
         existingUser: adminUser,
-        token,
+        token
       });
     }
+    // ================= ADMIN LOGIN END =================
 
-    // Else normal user login flow
+
+    // ================= USER LOGIN (UNCHANGED) =================
     const existingUser = await users.findOne({ email });
 
     if (!existingUser) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: "User not found"
       });
     }
 
     if (existingUser.password !== password) {
       return res.status(401).json({
         success: false,
-        message: "Invalid credentials",
+        message: "Invalid credentials"
       });
     }
 
@@ -85,13 +96,14 @@ exports.loginController = async (req, res) => {
       success: true,
       message: "Login successful",
       existingUser,
-      token,
+      token
     });
+    // ================= USER LOGIN END =================
 
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.message
     });
   }
 };
@@ -164,6 +176,47 @@ exports.adminUserController=async(req,res)=>{
   
 }
 
+//admin profile controller
+
+exports.adminProfileController = async (req, res) => {
+  console.log("Inside admin profile update controller");
+
+  try {
+    const { username, bio, orginalname } = req.body;
+
+    const updateData = { username, bio, orginalname };
+
+    if (req.file) {
+      updateData.profile = req.file.filename;
+    }
+
+    const updatedAdmin = await admins.findByIdAndUpdate(
+      req.adminId,
+      updateData,
+      { new: true }
+    ).select("-password"); // exclude password field
+
+    if (!updatedAdmin) {
+      return res.status(404).json({
+        success: false,
+        message: "Admin not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      admin: updatedAdmin
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message
+    });
+  }
+};
+
 //admin user delete
 // export const deleteUser = async (req, res) => {
 //   try {
@@ -182,7 +235,3 @@ exports.adminUserController=async(req,res)=>{
 //     });
 //   }
 // };
-
-
-
-
