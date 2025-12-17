@@ -3,7 +3,9 @@ const {
   registerController,
   loginController,
   userProfileController,
-  getUserProfileController
+  getUserProfileController,
+  adminUserController,
+  deleteUser
 } = require("./controller/userController");
 const { createPostController, getUserPostsController, getAllPostsController } = require("./controller/PostController");
 const jwtMiddleware = require("./middlewares/jwtMiddleware");
@@ -21,7 +23,7 @@ router.post("/create-post", jwtMiddleware, multerConfig.array("uploadImages", 5)
 //   res.json({ message: "Router is working ✅" });
 // });
 //get user post
-router.get("/home-post",jwtMiddleware,getUserPostsController)
+router.get("/home-post", jwtMiddleware, getUserPostsController)
 
 // //get all user post
 // router.get("/home-post",getAllPostsController)
@@ -39,6 +41,14 @@ router.put(
   multerConfig.single("profile"),
   userProfileController
 );
+// ------admin-------
+
+router.get("/get-allUsers",adminUserController)
+
+//admin delete user
+// router.delete("/delete-user/:id", deleteUser);
+
+
 
 
 

@@ -26,5 +26,8 @@ const jwtMiddleware = (req, res, next) => {
     });
   }
 };
+//admin midlare
+
+
 
 module.exports = jwtMiddleware;

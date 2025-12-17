@@ -32,27 +32,51 @@ exports.registerController = async (req, res) => {
 //login controller
 exports.loginController = async (req, res) => {
   const { email, password } = req.body;
-  console.log('inside the login comntroller');
-  
+  console.log('inside the login controller');
+
   try {
+    // Check if admin credentials (hardcoded)
+    if (email === "admin@gmail.com" && password === "admin") {
+      const adminUser = {
+        _id: "admin-id",          // dummy id for admin
+        name: "Admin",
+        email: "admin@gmail.com",
+        role: "admin",
+      };
+
+      const token = jwt.sign(
+        { id: adminUser._id, userMail: adminUser.email, role: adminUser.role },
+        process.env.JWTSecretKey,
+        { expiresIn: "1h" }
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "Admin login successful",
+        existingUser: adminUser,
+        token,
+      });
+    }
+
+    // Else normal user login flow
     const existingUser = await users.findOne({ email });
 
     if (!existingUser) {
       return res.status(404).json({
         success: false,
-        message: "User not found"
+        message: "User not found",
       });
     }
 
     if (existingUser.password !== password) {
       return res.status(401).json({
         success: false,
-        message: "Invalid credentials"
+        message: "Invalid credentials",
       });
     }
 
     const token = jwt.sign(
-      { id: existingUser._id, userMail: existingUser.email },
+      { id: existingUser._id, userMail: existingUser.email, role: "user" },
       process.env.JWTSecretKey,
       { expiresIn: "1h" }
     );
@@ -61,13 +85,13 @@ exports.loginController = async (req, res) => {
       success: true,
       message: "Login successful",
       existingUser,
-      token
+      token,
     });
 
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -126,6 +150,38 @@ exports.getUserProfileController = async (req, res) => {
 console.log("User Mail:", req.userMail);
 
 };
+// -----------------------------admin----------------------
+
+//get all users in admin
+exports.adminUserController=async(req,res)=>{
+  console.log('inside the user admin controller');
+  try {
+    const allUsers=await users.find()
+    res.status(200).json(allUsers)
+  } catch (error) {
+    res.status(500).json(error)
+  }
+  
+}
+
+//admin user delete
+// export const deleteUser = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+
+//     await User.findByIdAndDelete(id);
+
+//     res.status(200).json({
+//       success: true,
+//       message: "User deleted successfully",
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
 
 
 
