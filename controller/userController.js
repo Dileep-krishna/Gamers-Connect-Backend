@@ -1,6 +1,7 @@
-const users = require("../model/userModel");
-const admins = require('../model/adminmodel');
-const jwt=require('jsonwebtoken')
+const users = require("../model/userModel.js");
+const admins = require("../model/adminmodel");
+const jwt = require("jsonwebtoken");
+
 
 exports.registerController = async (req, res) => {
     // console.log(req)
@@ -217,21 +218,41 @@ exports.adminProfileController = async (req, res) => {
   }
 };
 
-//admin user delete
-// export const deleteUser = async (req, res) => {
-//   try {
-//     const { id } = req.params;
+// admin user delete
 
-//     await User.findByIdAndDelete(id);
+// admin user delete
+exports.deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
 
-//     res.status(200).json({
-//       success: true,
-//       message: "User deleted successfully",
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: error.message,
-//     });
-//   }
-// };
+    // Validate MongoDB ObjectId
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID",
+      });
+    }
+
+    // Check if user exists
+    const user = await users.findById(id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Delete user
+    await users.findByIdAndDelete(id);
+
+    res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
