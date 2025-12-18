@@ -7,7 +7,7 @@ const adminSchema = new mongoose.Schema({
   profile: String,
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  // add other admin fields if needed
+
 });
 
 module.exports = mongoose.model('admins', adminSchema);

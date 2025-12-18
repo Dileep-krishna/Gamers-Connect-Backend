@@ -13,7 +13,7 @@ const createPostController = async (req, res) => {
       visibility = "public",
       schedulePost = false,
       scheduleTime,
-      allowComments = "true",   // note: come as string from form-data
+      allowComments = "true",  
       allowReactions = "true"
     } = req.body;
 
@@ -100,23 +100,13 @@ const getUserPostsController = async (req, res) => {
     res.status(500).json(error)
  }
 };
-//get user-home posts
-// const getAllPostsController = async (req, res) => {
-//  console.log("inside the  all post controller");
-//  try {
-//     const allPost=await posts.find()
-//     res.status(200).json(allPost)
-//  } catch (error) {
-//     res.status(500).json(error)
-//  }
-// };
 
-
-
+//delete post controller
+// controller/postController.js
 
 
 module.exports = {
   createPostController,
   getUserPostsController,
-//   getAllPostsController
+
 };

@@ -6,7 +6,9 @@ const {
   getUserProfileController,
   adminUserController,
   deleteUser,
-  adminProfileController
+  adminProfileController,
+  deletePostController,
+
 } = require("./controller/userController");
 const { createPostController, getUserPostsController, getAllPostsController } = require("./controller/PostController");
 const jwtMiddleware = require("./middlewares/jwtMiddleware");
@@ -14,22 +16,21 @@ const multerConfig = require("./middlewares/imgMulterMiddleware");
 const adminJwtMiddleware = require("./middlewares/adminJwtMiddleware");
 const multer = require("multer");
 
-const router = express.Router();
 
+const router = express.Router();
+//register
 router.post("/register", registerController);
+//login
 router.post("/login", loginController);
 
-// Protect post creation with JWT and accept multiple files with field name 'uploadImages'
+//create post
 router.post("/create-post", jwtMiddleware, multerConfig.array("uploadImages", 5), createPostController);
 
-// router.get("/test", (req, res) => {
-//   res.json({ message: "Router is working ✅" });
-// });
+
 //get user post
 router.get("/home-post", jwtMiddleware, getUserPostsController)
 
-// //get all user post
-// router.get("/home-post",getAllPostsController)
+
 
 // update userProfile
 router.get(
@@ -37,7 +38,7 @@ router.get(
   jwtMiddleware,
   getUserProfileController
 );
-
+//
 router.put(
   "/profile-update",
   jwtMiddleware,
@@ -46,26 +47,35 @@ router.put(
 );
 // ------admin-------
 
-router.get("/get-allUsers",adminUserController)
+router.get("/get-allUsers", adminUserController)
 
 //admin profile update
 
 router.put(
   '/admin/profile',
-  adminJwtMiddleware,   
-  multerConfig.single('profile'),  
+  adminJwtMiddleware,
+  multerConfig.single('profile'),
   adminProfileController
 );;
 
 
 //admin delete user
-// router.delete("/delete-user/:id", deleteUser);
+
 
 router.delete(
   "/delete-user/:id",
- adminJwtMiddleware,
+  adminJwtMiddleware,
   deleteUser
 );
+
+
+// router.js
+router.delete(
+  "/admin/delete-post/:id",
+  adminJwtMiddleware,
+  deletePostController
+);
+
 
 
 

@@ -3,6 +3,7 @@ const admins = require("../model/adminmodel");
 const jwt = require("jsonwebtoken");
 
 
+
 exports.registerController = async (req, res) => {
     // console.log(req)
     console.log("inside the register controller")
@@ -256,3 +257,39 @@ exports.deleteUser = async (req, res) => {
     });
   }
 };
+const Post = require("../model/postModel");  // <--- Add this at the top
+
+exports.deletePostController = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log("Deleting post with id:", id);
+
+    // Check if id is valid MongoDB ObjectId before querying
+    if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ success: false, message: "Invalid post id" });
+    }
+
+    const deleted = await Post.findByIdAndDelete(id);
+
+    if (!deleted) {
+      console.log("No post found to delete with id:", id);
+      return res.status(404).json({ success: false, message: "Post not found" });
+    }
+
+    console.log("Post deleted successfully");
+    res.status(200).json({ success: true, message: "Post deleted" });
+  } catch (err) {
+    console.error("Error deleting post:", err);
+    res.status(500).json({ success: false, message: "Delete failed", error: err.message });
+  }
+};
+
+
+
+
+
+
+
+
+
+
