@@ -1,36 +1,36 @@
 const users = require("../model/userModel.js");
 const admins = require("../model/adminmodel");
 const jwt = require("jsonwebtoken");
-
+// const user = require("../models/adminBanModel");
 
 
 exports.registerController = async (req, res) => {
-    // console.log(req)
-    console.log("inside the register controller")
-    const { username, password, email } = req.body
-    // console.log(username,password,email);
+  // console.log(req)
+  console.log("inside the register controller")
+  const { username, password, email } = req.body
+  // console.log(username,password,email);
 
-//register logic
-    try {
+  //register logic
+  try {
 
-        const existingUser = await users.findOne({ email, username })
-        if (existingUser) {
-            res.status(404).json("user already exists please login.....")
-        } else {
+    const existingUser = await users.findOne({ email, username })
+    if (existingUser) {
+      res.status(404).json("user already exists please login.....")
+    } else {
 
-            const newUser = new users({
-                username,
-                email,
-                password
-            })
-            await newUser.save()
-            res.status(200).json(newUser)
-        }
-
-
-    } catch (error) {
-        res.status(500).json(error)
+      const newUser = new users({
+        username,
+        email,
+        password
+      })
+      await newUser.save()
+      res.status(200).json(newUser)
     }
+
+
+  } catch (error) {
+    res.status(500).json(error)
+  }
 }
 //login controller
 exports.loginController = async (req, res) => {
@@ -80,6 +80,13 @@ exports.loginController = async (req, res) => {
         message: "User not found"
       });
     }
+    if (existingUser.isBanned) {
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been banned",
+        reason: existingUser.banReason
+      });
+    }
 
     if (existingUser.password !== password) {
       return res.status(401).json({
@@ -114,9 +121,9 @@ exports.userProfileController = async (req, res) => {
   console.log("Inside profile update controller");
 
   try {
-    const { username, bio,orginalname } = req.body;
+    const { username, bio, orginalname } = req.body;
 
-    const updateData = { username, bio,orginalname };
+    const updateData = { username, bio, orginalname };
 
     if (req.file) {
       updateData.profile = req.file.filename;
@@ -161,21 +168,21 @@ exports.getUserProfileController = async (req, res) => {
     res.status(500).json(error);
   }
   console.log("User ID:", req.userId);
-console.log("User Mail:", req.userMail);
+  console.log("User Mail:", req.userMail);
 
 };
 // -----------------------------admin----------------------
 
 //get all users in admin
-exports.adminUserController=async(req,res)=>{
+exports.adminUserController = async (req, res) => {
   console.log('inside the user admin controller');
   try {
-    const allUsers=await users.find()
+    const allUsers = await users.find()
     res.status(200).json(allUsers)
   } catch (error) {
     res.status(500).json(error)
   }
-  
+
 }
 
 //admin profile controller
@@ -283,13 +290,41 @@ exports.deletePostController = async (req, res) => {
     res.status(500).json({ success: false, message: "Delete failed", error: err.message });
   }
 };
+//admin ban
 
+// controller/adminController.js
+exports.toggleBanUser = async (req, res) => {
+   console.log("req.body:", req.body); 
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
 
+    const user = await users.findById(id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
 
+    user.isBanned = !user.isBanned;
 
+    // store reason only when banning
+    if (user.isBanned) {
+      user.banReason = reason || "Violation of platform rules";
+    } else {
+      user.banReason = "";
+    }
 
+    await user.save();
 
-
-
-
+       res.status(200).json({
+      success: true,
+      isBanned: user.isBanned,
+      banReason: user.banReason,
+      message: user.isBanned
+        ? "User banned successfully"
+        : "Welcome back to GamersConnect"
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 

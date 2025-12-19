@@ -8,6 +8,8 @@ const {
   deleteUser,
   adminProfileController,
   deletePostController,
+  toggleBanUser
+
 
 } = require("./controller/userController");
 const { createPostController, getUserPostsController, getAllPostsController } = require("./controller/PostController");
@@ -15,6 +17,7 @@ const jwtMiddleware = require("./middlewares/jwtMiddleware");
 const multerConfig = require("./middlewares/imgMulterMiddleware");
 const adminJwtMiddleware = require("./middlewares/adminJwtMiddleware");
 const multer = require("multer");
+
 
 
 const router = express.Router();
@@ -69,12 +72,22 @@ router.delete(
 );
 
 
-// router.js
+// delete post
 router.delete(
   "/admin/delete-post/:id",
   adminJwtMiddleware,
   deletePostController
 );
+
+//admin user-ban model
+// const { toggleBanUser } = require("../controller/adminController");
+
+
+router.put("/ban-user/:id", adminJwtMiddleware, toggleBanUser);
+
+
+
+
 
 
 

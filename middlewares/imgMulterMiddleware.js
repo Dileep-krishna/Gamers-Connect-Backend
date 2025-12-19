@@ -19,7 +19,7 @@ const fileFilter = (req, file, cb) => {
     "video/webm",
     "video/quicktime"
   ];
-
+//type match files accept
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {

@@ -1,43 +1,51 @@
-const mongoose=require("mongoose")
-const userSchema=new mongoose.Schema({
-    username:{
-        type:String,
-        required:true
+const mongoose = require("mongoose");
 
-    },
-     email:{
-        type:String,
-        required:true
+const userSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true
+  },
 
-    },
-     password:{
-        type:String,
-        required:true
+  email: {
+    type: String,
+    required: true
+  },
 
-    },
-     profile:{
-        type:String,
-        default:""
+  password: {
+    type: String,
+    required: true
+  },
 
-    },
-     role:{
-        type:String,
-        default:"GamersConnect user"
+  profile: {
+    type: String,
+    default: ""
+  },
 
-    },
-     bio:{
-        type:String,
-        default:"user"
+  role: {
+    type: String,
+    default: "GamersConnect user"
+  },
 
-    },
-    orginalname:{
-        type:String,
-        default:"user"
+  bio: {
+    type: String,
+    default: "user"
+  },
 
-    },
-    
-    
-})
-const users = mongoose.model("users",userSchema)
+  orginalname: {
+    type: String,
+    default: "user"
+  },
 
-module.exports=users
+  // 🔴 ADD THIS FIELD ONLY
+  isBanned: {
+    type: Boolean,
+    default: false
+  },
+   banReason: {
+    type: String,
+    default: ""
+  }
+});
+
+const users = mongoose.model("users", userSchema);
+module.exports = users;

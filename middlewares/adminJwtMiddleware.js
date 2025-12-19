@@ -15,7 +15,7 @@ const adminJwtMiddleware = (req, res, next) => {
   try {
     const jwtResponse = jwt.verify(token, process.env.JWTSecretKey);
 
-    // Optionally, check if the user role is admin (if role info is embedded in token)
+   //role is admin or not
     if (jwtResponse.role !== 'admin') {
       return res.status(403).json({
         success: false,
