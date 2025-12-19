@@ -44,8 +44,22 @@ const userSchema = new mongoose.Schema({
    banReason: {
     type: String,
     default: ""
-  }
+  },
+    // 📨 USER FEEDBACK (ADD HERE 👇)
+  feedbacks: [
+    {
+      message: {
+        type: String,
+        required: true
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now
+      }
+    }
+  ]
 });
+
 
 const users = mongoose.model("users", userSchema);
 module.exports = users;

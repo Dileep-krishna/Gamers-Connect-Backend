@@ -41,7 +41,6 @@ exports.loginController = async (req, res) => {
     // ================= ADMIN LOGIN (FIXED) =================
     if (email === "admin@gmail.com" && password === "admin") {
 
-      // 🔹 Find admin from DB
       const adminUser = await admins.findOne({ email });
 
       if (!adminUser) {
@@ -53,7 +52,7 @@ exports.loginController = async (req, res) => {
 
       const token = jwt.sign(
         {
-          id: adminUser._id,          // ✅ REAL ObjectId
+          id: adminUser._id,
           userMail: adminUser.email,
           role: "admin"
         },
@@ -71,7 +70,7 @@ exports.loginController = async (req, res) => {
     // ================= ADMIN LOGIN END =================
 
 
-    // ================= USER LOGIN (UNCHANGED) =================
+    // ================= USER LOGIN =================
     const existingUser = await users.findOne({ email });
 
     if (!existingUser) {
@@ -80,11 +79,12 @@ exports.loginController = async (req, res) => {
         message: "User not found"
       });
     }
+
+    // 🚫 BANNED USER — SEND ADMIN MESSAGE
     if (existingUser.isBanned) {
       return res.status(403).json({
         success: false,
-        message: "Your account has been banned",
-        reason: existingUser.banReason
+        banReason: existingUser.banReason
       });
     }
 
@@ -116,6 +116,7 @@ exports.loginController = async (req, res) => {
     });
   }
 };
+
 //update user profile 
 exports.userProfileController = async (req, res) => {
   console.log("Inside profile update controller");
@@ -327,4 +328,43 @@ exports.toggleBanUser = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+//user feedback modal
+
+exports.sendBanFeedback = async (req, res) => {
+  try {
+    const { message, email } = req.body;
+
+    if (!message || !email) {
+      return res.status(400).json({
+        success: false,
+        message: "Message and email are required"
+      });
+    }
+
+    const user = await users.findOne({ email });
+
+    if (!user || !user.isBanned) {
+      return res.status(403).json({
+        success: false,
+        message: "Only banned users can send feedback"
+      });
+    }
+
+    user.feedbacks.push({ message });
+    await user.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Feedback sent to admin"
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 

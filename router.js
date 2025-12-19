@@ -8,7 +8,8 @@ const {
   deleteUser,
   adminProfileController,
   deletePostController,
-  toggleBanUser
+  toggleBanUser,
+  sendBanFeedback
 
 
 } = require("./controller/userController");
@@ -85,6 +86,7 @@ router.delete(
 
 router.put("/ban-user/:id", adminJwtMiddleware, toggleBanUser);
 
+router.post("/ban-feedback", sendBanFeedback);
 
 
 
