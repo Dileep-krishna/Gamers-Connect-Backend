@@ -1,6 +1,18 @@
 const users = require("../model/userModel.js");
 const admins = require("../model/adminmodel");
 const jwt = require("jsonwebtoken");
+const nodemailer = require('nodemailer');
+
+console.log("SMTP_USER:", process.env.SMTP_USER);
+console.log("SMTP_PASS:", process.env.SMTP_PASS ? "✔ Loaded" : "❌ Not Loaded");
+console.log("SMTP_HOST:", process.env.SMTP_HOST);
+console.log("SMTP_PORT:", process.env.SMTP_PORT);
+console.log("SMTP_USER:", process.env.SMTP_USER);
+console.log("SMTP_PASS loaded:", !!process.env.SMTP_PASS);
+
+
+
+
 // const user = require("../models/adminBanModel");
 
 
@@ -366,5 +378,82 @@ exports.sendBanFeedback = async (req, res) => {
     });
   }
 };
+//fetch all feedbacks
+exports.getUsersWithFeedbacks = async (req, res) => {
+  try {
+    // Find all users who have at least one feedback
+    const usersWithFeedbacks = await users.find({ "feedbacks.0": { $exists: true } })
+      .select('username email feedbacks isBanned banReason');
+
+    res.status(200).json(usersWithFeedbacks);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+//user sends fedbacks
+exports.sendBanFeedback = async (req, res) => {
+  try {
+    const { email, message } = req.body;
+
+    if (!email || !message) {
+      return res.status(400).json({ success: false, message: "Email and message required" });
+    }
+
+    const user = await users.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Add new feedback entry
+    user.feedbacks.push({ message });
+    await user.save();
+
+    res.status(201).json({ success: true, message: "Feedback sent to admin" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+//relpay to adll mails
+exports.replyToBanFeedback = async (req, res) => {
+  try {
+    const { email, message } = req.body;
+
+    if (!email || !message) {
+      return res.status(400).json({ success: false, message: "Email and message required" });
+    }
+
+    // Setup nodemailer transporter (use your SMTP settings)
+    let transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT, 10),
+      secure: false,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+
+    let mailOptions = {
+      from: `"GamersConnect Admin" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: "Reply to your ban feedback",
+      text: message,
+      html: `<p>${message}</p>`
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ success: true, message: "Reply sent successfully" });
+  } catch (error) {
+    console.error("Error sending reply:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+
+
 
 

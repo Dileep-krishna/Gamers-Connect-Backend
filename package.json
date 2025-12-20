@@ -17,6 +17,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^9.0.0",
     "multer": "^2.0.2",
+    "nodemailer": "^7.0.11",
     "sweetalert2": "^11.26.10"
   }
 }

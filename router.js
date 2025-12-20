@@ -1,4 +1,6 @@
 const express = require("express");
+const controller = require('./controller/userController');
+
 const {
   registerController,
   loginController,
@@ -86,7 +88,16 @@ router.delete(
 
 router.put("/ban-user/:id", adminJwtMiddleware, toggleBanUser);
 
-router.post("/ban-feedback", sendBanFeedback);
+// router.post("/ban-feedback", sendBanFeedback);
+
+//all feedbacks
+
+// Route to fetch all users who have feedbacks (admin view)
+router.get('/feedback/all', controller.getUsersWithFeedbacks);
+// Route for a banned user to send feedback
+router.post('/ban-feedback', controller.sendBanFeedback);
+// Route for admin to reply to user feedback by email
+router.post('/feedback/reply', controller.replyToBanFeedback);
 
 
 

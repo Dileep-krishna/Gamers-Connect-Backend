@@ -1,3 +1,6 @@
+// 7. Import dotenv
+require("dotenv").config();
+
 // 1. Import express
 const express = require("express");
 
@@ -7,8 +10,8 @@ const cors = require("cors");
 // 8. Import router
 const router = require("./router");
 
-// 7. Import dotenv
-require("dotenv").config();
+
+
 
 // 11. Connect db
 require("./db/connection");
