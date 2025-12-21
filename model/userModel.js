@@ -36,16 +36,16 @@ const userSchema = new mongoose.Schema({
     default: "user"
   },
 
-  // 🔴 ADD THIS FIELD ONLY
   isBanned: {
     type: Boolean,
     default: false
   },
-   banReason: {
+
+  banReason: {
     type: String,
     default: ""
   },
-    // 📨 USER FEEDBACK (ADD HERE 👇)
+
   feedbacks: [
     {
       message: {
@@ -57,9 +57,23 @@ const userSchema = new mongoose.Schema({
         default: Date.now
       }
     }
+  ],
+
+  // ✅ ADD ONLY THESE TWO FIELDS
+  followers: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "users"
+    }
+  ],
+
+  following: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "users"
+    }
   ]
 });
-
 
 const users = mongoose.model("users", userSchema);
 module.exports = users;

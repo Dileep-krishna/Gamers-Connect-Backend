@@ -99,7 +99,10 @@ router.post('/ban-feedback', controller.sendBanFeedback);
 // Route for admin to reply to user feedback by email
 router.post('/feedback/reply', controller.replyToBanFeedback);
 
+//followers route
+router.post("/follow/:targetUserId", jwtMiddleware, controller.followUnfollowUser);
 
+//get all users withy minamal info
 
 
 

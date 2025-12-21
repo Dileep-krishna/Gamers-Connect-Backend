@@ -451,6 +451,53 @@ exports.replyToBanFeedback = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+//followers api
+
+exports.followUnfollowUser = async (req, res) => {
+  const currentUserId = req.userId; // extracted from JWT middleware
+  const targetUserId = req.params.targetUserId;
+
+  if (currentUserId === targetUserId) {
+    return res.status(400).json({ success: false, message: "You can't follow yourself." });
+  }
+
+  try {
+    // Fetch users by id
+    const currentUser = await users.findById(currentUserId);
+    const targetUser = await users.findById(targetUserId);
+
+    if (!targetUser) {
+      return res.status(404).json({ success: false, message: "Target user not found." });
+    }
+
+    // Check if already following
+    const isFollowing = currentUser.following.some(id => id.toString() === targetUserId);
+
+    if (isFollowing) {
+      // Unfollow logic: remove from arrays
+      currentUser.following = currentUser.following.filter(id => id.toString() !== targetUserId);
+      targetUser.followers = targetUser.followers.filter(id => id.toString() !== currentUserId);
+    } else {
+      // Follow logic: add to arrays
+      currentUser.following.push(targetUserId);
+      targetUser.followers.push(currentUserId);
+    }
+
+    // Save changes
+    await currentUser.save();
+    await targetUser.save();
+
+    return res.json({
+      success: true,
+      isFollowing: !isFollowing, // new state after toggle
+      followersCount: targetUser.followers.length,
+      followingCount: currentUser.following.length,
+    });
+  } catch (error) {
+    console.error("Follow/unfollow error:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
 
 
 
