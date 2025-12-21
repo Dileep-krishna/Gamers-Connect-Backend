@@ -2,6 +2,8 @@ const users = require("../model/userModel.js");
 const admins = require("../model/adminmodel");
 const jwt = require("jsonwebtoken");
 const nodemailer = require('nodemailer');
+const posts = require("../model/postModel");
+
 
 console.log("SMTP_USER:", process.env.SMTP_USER);
 console.log("SMTP_PASS:", process.env.SMTP_PASS ? "✔ Loaded" : "❌ Not Loaded");
@@ -481,6 +483,16 @@ exports.followUnfollowUser = async (req, res) => {
       // Follow logic: add to arrays
       currentUser.following.push(targetUserId);
       targetUser.followers.push(currentUserId);
+
+      // Add notification to targetUser
+      const notificationMessage = `${currentUser.username} started following you`;
+      targetUser.notifications.push({
+        type: "follow",
+        message: notificationMessage,
+        fromUserId: currentUserId,
+        read: false,
+        createdAt: new Date(),
+      });
     }
 
     // Save changes
@@ -498,7 +510,174 @@ exports.followUnfollowUser = async (req, res) => {
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };
+//chat
+exports.getMessages = async (req, res) => {
+  try {
+    const userId = req.userId; // logged-in user
+    const receiverId = req.params.receiverId;
 
+    // Find logged-in user with chats matching the receiver
+    const user = await users.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Filter chats where receiverId or senderId matches the chat partner
+    const messages = user.chats.filter(
+      (chat) =>
+        (chat.senderId.toString() === userId && chat.receiverId.toString() === receiverId) ||
+        (chat.senderId.toString() === receiverId && chat.receiverId.toString() === userId)
+    );
+
+    // Sort messages by createdAt ascending
+    messages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+    return res.json({ success: true, messages });
+  } catch (error) {
+    console.error("Get messages error:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+exports.sendMessage = async (req, res) => {
+  try {
+    const senderId = req.userId;
+    const { receiverId, message } = req.body;
+
+    if (!receiverId || !message) {
+      return res.status(400).json({ success: false, message: "receiverId and message required" });
+    }
+
+    const sender = await users.findById(senderId);
+    const receiver = await users.findById(receiverId);
+
+    if (!sender || !receiver) {
+      return res.status(404).json({ success: false, message: "Sender or receiver not found" });
+    }
+
+    const newMessage = {
+      senderId,
+      receiverId,
+      message,
+      createdAt: new Date(),
+    };
+
+    // Save message in sender's chats array
+    sender.chats.push(newMessage);
+    await sender.save();
+
+    // Save message in receiver's chats array
+    receiver.chats.push(newMessage);
+    await receiver.save();
+
+    return res.json({ success: true, message: newMessage });
+  } catch (error) {
+    console.error("Send message error:", error);
+    return res.status(500).json({ success: false, message: "Failed to send message" });
+  }
+};
+//get notification
+// Get notifications controller
+exports.getNotificationsController = async (req, res) => {
+  try {
+    const userId = req.userId;  // from jwtMiddleware
+
+    const user = await users.findById(userId)
+      .populate('notifications.fromUserId', 'username profile')
+      .select('notifications');
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    return res.json({ success: true, notifications: user.notifications });
+  } catch (error) {
+    console.error('Failed to fetch notifications:', error);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+exports.markNotificationReadController = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const notificationId = req.params.id;
+
+    // Find user by id
+    const user = await users.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Find the notification by id and mark as read
+    const notification = user.notifications.id(notificationId);
+    if (!notification) {
+      return res.status(404).json({ success: false, message: 'Notification not found' });
+    }
+
+    notification.read = true;
+
+    await user.save();
+
+    return res.json({ success: true, message: 'Notification marked as read' });
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+// Mark all notifications as read
+exports.markAllNotificationsAsRead = async (req, res) => {
+  try {
+    const userId = req.userId; // from JWT middleware
+    const user = await users.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    user.notifications.forEach(notif => {
+      notif.read = true;
+    });
+
+    await user.save();
+
+    return res.json({ success: true, message: 'All notifications marked as read' });
+  } catch (error) {
+    console.error('Error marking all notifications as read:', error);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+//delete user post 
+exports.deleteOwnPostController = async (req, res) => {
+  try {
+    console.log("REQ PARAMS:", req.params);
+    console.log("REQ USER ID:", req.userId);
+
+    const postId = req.params.id;
+    const userId = req.userId;
+
+    const post = await posts.findById(postId);
+    console.log("FOUND POST:", post);
+
+    if (!post) {
+      return res.status(404).json({ success: false, message: "Post not found" });
+    }
+
+    console.log("POST USER ID:", post.userId.toString());
+    console.log("TOKEN USER ID:", userId);
+
+    if (post.userId.toString() !== userId) {
+      return res.status(403).json({ success: false, message: "Not authorized" });
+    }
+
+    await posts.findByIdAndDelete(postId);
+
+    res.json({ success: true, message: "Post deleted" });
+  } catch (err) {
+    console.error("DELETE POST ERROR 👉", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
 
 
 

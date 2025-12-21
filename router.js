@@ -1,6 +1,8 @@
 const express = require("express");
 const controller = require('./controller/userController');
 
+
+
 const {
   registerController,
   loginController,
@@ -20,6 +22,7 @@ const jwtMiddleware = require("./middlewares/jwtMiddleware");
 const multerConfig = require("./middlewares/imgMulterMiddleware");
 const adminJwtMiddleware = require("./middlewares/adminJwtMiddleware");
 const multer = require("multer");
+
 
 
 
@@ -105,8 +108,35 @@ router.post("/follow/:targetUserId", jwtMiddleware, controller.followUnfollowUse
 //get all users withy minamal info
 
 
+//chat
+router.get(
+  "/chat/:receiverId",
+  jwtMiddleware,
+  controller.getMessages
+);
 
+// Save message (optional REST fallback)
+router.post(
+  "/chat/send",
+  jwtMiddleware,
+  controller.sendMessage
+);
+//notification
 
+router.get('/notifications', jwtMiddleware,controller.getNotificationsController);
+//
+// Mark single notification as read
+// Mark single notification as read
+router.post('/notifications/mark-read/:id', jwtMiddleware, controller.markNotificationReadController);
+
+// Mark all notifications as read
+router.post('/notifications/mark-all-read', jwtMiddleware, controller.markAllNotificationsAsRead);
+//delete user post 
+router.delete(
+  "/user/delete-post/:id",
+  jwtMiddleware,
+  controller.deleteOwnPostController
+);
 
 
 

@@ -1,5 +1,46 @@
 const mongoose = require("mongoose");
 
+/* ===============================
+   CHAT MESSAGE SUB-SCHEMA
+   (Same as ChatMessage model)
+================================ */
+const chatMessageSchema = new mongoose.Schema(
+  {
+    senderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "users",
+      required: true
+    },
+    receiverId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "users",
+      required: true
+    },
+    message: {
+      type: String,
+      required: true
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }
+);
+
+/* ===============================
+   NOTIFICATION SUB-SCHEMA
+================================ */
+const notificationSchema = new mongoose.Schema({
+  type: { type: String, required: true }, // e.g. "follow"
+  message: { type: String, required: true },
+  fromUserId: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
+  createdAt: { type: Date, default: Date.now },
+  read: { type: Boolean, default: false }
+});
+
+/* ===============================
+   USER SCHEMA (UNCHANGED FIELDS)
+================================ */
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -59,7 +100,6 @@ const userSchema = new mongoose.Schema({
     }
   ],
 
-  // ✅ ADD ONLY THESE TWO FIELDS
   followers: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -72,7 +112,23 @@ const userSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: "users"
     }
-  ]
+  ],
+
+  // ✅ CHAT METADATA (already approved)
+  online: {
+    type: Boolean,
+    default: false
+  },
+
+  lastSeen: {
+    type: Date
+  },
+
+  // ✅ CHAT IMPLEMENTATION (NEW – SAFE)
+  chats: [chatMessageSchema],
+
+  // ✅ NOTIFICATIONS IMPLEMENTATION (NEW)
+  notifications: [notificationSchema]
 });
 
 const users = mongoose.model("users", userSchema);
