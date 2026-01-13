@@ -69,10 +69,8 @@ io.on("connection", (socket) => {
   });
 });
 
-// 3. Create port
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-// 4. Start server (⚠️ USE server.listen, not app.listen)
 server.listen(PORT, () => {
-  console.log(`🚀 GamersConnect server running successfully at ${PORT}`);
+  console.log(`🚀 GamersConnect server running on port ${PORT}`);
 });
